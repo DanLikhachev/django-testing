@@ -8,53 +8,93 @@ from news.forms import WARNING
 
 
 @pytest.mark.django_db
-def test_anonymous_cannot_post_comment(client, news):
+@pytest.mark.parametrize(
+    'client_fixture, status_code, objects_count',
+    [
+        (pytest.lazy_fixture('client'), HTTPStatus.FOUND, 0),
+        (pytest.lazy_fixture('user_client'), HTTPStatus.FOUND, 1),
+        (pytest.lazy_fixture('author_client'), HTTPStatus.FOUND, 1),
+    ]
+)
+def test_post_comment(client_fixture, status_code, objects_count, news):
+    """Возможность отправить комментарий"""
     url = reverse('news:detail', kwargs={'pk': news.pk})
-    response = client.post(
+    response = client_fixture.post(
         url,
         {'text': 'test comment'}
     )
-    assert response.status_code == HTTPStatus.FOUND
-    assert Comment.objects.count() == 0
+    assert response.status_code == status_code
+    assert Comment.objects.count() == objects_count
 
 
 @pytest.mark.django_db
-def test_author_post_comment(author_client, news):
-    url = reverse('news:detail', kwargs={'pk': news.pk})
-    response = author_client.post(
+@pytest.mark.parametrize(
+    'client_fixture, comment_text, response_status, objects_count',
+    [
+        (
+            pytest.lazy_fixture('client'),
+            'Test comment',
+            HTTPStatus.FOUND,
+            1
+        ),
+        (
+            pytest.lazy_fixture('user_client'),
+            'Test comment',
+            HTTPStatus.NOT_FOUND,
+            1
+        ),
+        (
+            pytest.lazy_fixture('author_client'),
+            'edited test comment',
+            HTTPStatus.FOUND,
+            1
+        ),
+    ]
+)
+def test_comment_edit(
+    client_fixture,
+    comment_text,
+    response_status,
+    objects_count,
+    comment
+):
+    """Возможность редактирования комментария"""
+    url = reverse('news:edit', kwargs={'pk': comment.pk})
+    response = client_fixture.post(
         url,
-        {'text': 'test comment'}
-    )
-    assert response.status_code == HTTPStatus.FOUND
-    assert Comment.objects.count() == 1
-
-
-@pytest.mark.django_db
-def test_author_edit_comment(author_client, comment):
-    edit_url = reverse('news:edit', kwargs={'pk': comment.pk})
-    response = author_client.post(
-        edit_url,
         {'text': 'edited test comment'}
     )
-
     comment.refresh_from_db()
-
-    assert response.status_code == HTTPStatus.FOUND
-    assert comment.text == 'edited test comment'
-    assert Comment.objects.count() == 1
+    assert response.status_code == response_status
+    assert comment.text == comment_text
+    assert Comment.objects.count() == objects_count
 
 
 @pytest.mark.django_db
-def test_author_delete_comment(author_client, comment):
-    delete_url = reverse('news:delete', kwargs={'pk': comment.pk})
-    response = author_client.post(delete_url)
-
-    assert response.status_code == HTTPStatus.FOUND
-    assert Comment.objects.count() == 0
+@pytest.mark.parametrize(
+    'client_fixture, response_status, objects_count',
+    [
+        (pytest.lazy_fixture('client'), HTTPStatus.FOUND, 1),
+        (pytest.lazy_fixture('user_client'), HTTPStatus.NOT_FOUND, 1),
+        (pytest.lazy_fixture('author_client'), HTTPStatus.FOUND, 0),
+    ]
+)
+def test_comment_delete(
+    client_fixture,
+    response_status,
+    objects_count,
+    comment
+):
+    """Возможность удаления комментария"""
+    url = reverse('news:delete', kwargs={'pk': comment.pk})
+    response = client_fixture.post(url)
+    assert response.status_code == response_status
+    assert Comment.objects.count() == objects_count
 
 
 @pytest.mark.django_db
 def test_bad_words_in_comment(news, author_client):
+    """Запрещенные слова"""
     url = reverse('news:detail', kwargs={'pk': news.pk})
     response = author_client.post(
         url,
@@ -65,20 +105,3 @@ def test_bad_words_in_comment(news, author_client):
         'text',
         errors=(WARNING)
     )
-
-
-@pytest.mark.django_db
-def test_user_cannot_edit_others_comment(user_client, comment):
-    edit_url = reverse('news:edit', kwargs={'pk': comment.pk})
-    response = user_client.post(edit_url, {'text': 'hacked comment'})
-    assert response.status_code == HTTPStatus.NOT_FOUND
-    comment.refresh_from_db()
-    assert comment.text == 'Test comment'
-
-
-@pytest.mark.django_db
-def test_user_cannot_delete_others_comment(user_client, comment):
-    delete_url = reverse('news:delete', kwargs={'pk': comment.pk})
-    response = user_client.post(delete_url)
-    assert response.status_code == HTTPStatus.NOT_FOUND
-    assert Comment.objects.filter(id=comment.id).exists()

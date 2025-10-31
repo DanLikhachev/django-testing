@@ -1,10 +1,13 @@
 import pytest
 from django.urls import reverse
-from yanews.settings import NEWS_COUNT_ON_HOME_PAGE
+from django.conf import settings
+
+NEWS_COUNT_ON_HOME_PAGE = settings.NEWS_COUNT_ON_HOME_PAGE
 
 
 @pytest.mark.django_db
 def test_quantity_home(bulk_news, client):
+    """Количество новостей на главной странице"""
     url = reverse('news:home')
     response = client.get(url)
     news_count = len(response.context['object_list'])
@@ -13,6 +16,7 @@ def test_quantity_home(bulk_news, client):
 
 @pytest.mark.django_db
 def test_news_order_home(bulk_news, client):
+    """Порядок новостей"""
     url = reverse('news:home')
     response = client.get(url)
     news_on_page = response.context['object_list']
@@ -22,6 +26,7 @@ def test_news_order_home(bulk_news, client):
 
 @pytest.mark.django_db
 def test_comments_order(bulk_comment, client, news):
+    """Порядок комментариев"""
     url = reverse('news:detail', kwargs={'pk': news.pk})
     response = client.get(url)
     comments_on_page = response.context['news'].comment_set.all()
@@ -31,6 +36,7 @@ def test_comments_order(bulk_comment, client, news):
 
 @pytest.mark.django_db
 def test_comment_abaliability(client, news):
+    """Доступ к просмотру комментариев"""
     url = reverse('news:detail', kwargs={'pk': news.pk})
     response = client.get(url)
     assert 'form' not in response.context
