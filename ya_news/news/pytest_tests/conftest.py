@@ -8,8 +8,6 @@ from news.models import News, Comment
 
 User = get_user_model()
 
-NEWS_COUNT_ON_HOME_PAGE = settings.NEWS_COUNT_ON_HOME_PAGE
-
 
 @pytest.fixture
 def client():
@@ -87,8 +85,8 @@ def bulk_comment(news, author):
 @pytest.mark.django_db
 @pytest.fixture
 def bulk_news():
-    """Создает NEWS_COUNT_ON_HOME_PAGE + 1 новостей."""
-    news_count = NEWS_COUNT_ON_HOME_PAGE + 1
+    """Создает settings.NEWS_COUNT_ON_HOME_PAGE + 1 новостей."""
+    news_count = settings.NEWS_COUNT_ON_HOME_PAGE + 1
     all_news = []
 
     for i in range(news_count):

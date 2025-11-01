@@ -2,8 +2,6 @@ import pytest
 from django.urls import reverse
 from django.conf import settings
 
-NEWS_COUNT_ON_HOME_PAGE = settings.NEWS_COUNT_ON_HOME_PAGE
-
 
 @pytest.mark.django_db
 def test_quantity_home(bulk_news, client):
@@ -11,7 +9,7 @@ def test_quantity_home(bulk_news, client):
     url = reverse('news:home')
     response = client.get(url)
     news_count = len(response.context['object_list'])
-    assert news_count == NEWS_COUNT_ON_HOME_PAGE
+    assert news_count == settings.NEWS_COUNT_ON_HOME_PAGE
 
 
 @pytest.mark.django_db
