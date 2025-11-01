@@ -13,13 +13,13 @@ NEWS_COUNT_ON_HOME_PAGE = settings.NEWS_COUNT_ON_HOME_PAGE
 
 @pytest.fixture
 def client():
-    """Аноним"""
+    """Создает пользователя."""
     return Client()
 
 
 @pytest.fixture
 def user():
-    """Пользователь"""
+    """Создает пользователя."""
     return User.objects.create(
         username='user',
     )
@@ -27,7 +27,7 @@ def user():
 
 @pytest.fixture
 def author():
-    """Автор"""
+    """Создает автора."""
     return User.objects.create(
         username='author_user',
     )
@@ -35,14 +35,14 @@ def author():
 
 @pytest.fixture
 def user_client(client, user):
-    """Клиент пользователя"""
+    """Клиент пользователя."""
     client.force_login(user)
     return client
 
 
 @pytest.fixture
 def author_client(client, author):
-    """Клиент автора"""
+    """Клиент автора."""
     client.force_login(author)
     return client
 
@@ -50,7 +50,7 @@ def author_client(client, author):
 @pytest.mark.django_db
 @pytest.fixture
 def news():
-    """Новость"""
+    """Создает новость."""
     return News.objects.create(
         title='Single News',
         text='Test text'
@@ -60,7 +60,7 @@ def news():
 @pytest.mark.django_db
 @pytest.fixture
 def comment(news, author):
-    """Комментарий"""
+    """Создает комментарий."""
     return Comment.objects.create(
         news=news,
         author=author,
@@ -71,7 +71,7 @@ def comment(news, author):
 @pytest.mark.django_db
 @pytest.fixture
 def bulk_comment(news, author):
-    """Масса новостей"""
+    """Создает 5 комментариев с разницой по дате."""
     comments = [
         Comment(
             news=news,
@@ -87,7 +87,7 @@ def bulk_comment(news, author):
 @pytest.mark.django_db
 @pytest.fixture
 def bulk_news():
-    """Масса комментариев"""
+    """Создает NEWS_COUNT_ON_HOME_PAGE + 1 новостей."""
     news_count = NEWS_COUNT_ON_HOME_PAGE + 1
     all_news = []
 

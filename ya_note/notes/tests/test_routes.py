@@ -1,4 +1,3 @@
-from django.test import TestCase
 from django.urls import reverse
 
 from http import HTTPStatus
@@ -6,10 +5,10 @@ from http import HTTPStatus
 from .common import BaseTest
 
 
-class AllRouteCase(TestCase):
+class AllRouteCase(BaseTest):
 
     def test_pages_avilability_for_all(self):
-        """Доступ к публичным страницам"""
+        """Проврка доступа к публичным страницам."""
         urls = (
             ('notes:home', None),
             ('users:login', None),
@@ -22,7 +21,7 @@ class AllRouteCase(TestCase):
                 self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_pages_unavalible(self):
-        """Доступ к закрытым страницам"""
+        """Проверка доступа к закрытым страницам."""
         login_url = reverse('users:login')
         urls = (
             ('notes:list', None),
@@ -40,7 +39,7 @@ class AllRouteCase(TestCase):
 class AuthRouteCase(BaseTest):
 
     def test_auth_pages_avalible(self):
-        """Доступ к созданию заметок для пользователей"""
+        """Проверка доступа к созданию заметок для пользователей."""
         urls = (
             ('notes:list', None),
             ('notes:success', None),
@@ -56,7 +55,7 @@ class AuthRouteCase(BaseTest):
 class AuthorRouteCase(BaseTest):
 
     def test_author_actions(self):
-        """Действия автора"""
+        """Проверка доступа к действиям автора."""
         user_statuses = (
             (self.author_client, HTTPStatus.OK),
             (self.reader_client, HTTPStatus.NOT_FOUND)

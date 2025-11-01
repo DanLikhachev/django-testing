@@ -10,7 +10,7 @@ class BaseTest(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        """Базовый класс"""
+        """Базовый класс."""
         cls.author = User.objects.create(username='Автор')
         cls.reader = User.objects.create(username='Другой пользователь')
         cls.author_client = Client()

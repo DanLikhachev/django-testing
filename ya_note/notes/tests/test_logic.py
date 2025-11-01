@@ -10,7 +10,7 @@ from .common import BaseTest
 class TestNote(BaseTest):
 
     def test_user_can_create_note(self):
-        """Создание заметки - пользователь"""
+        """Проверка на создание заметки пользователем."""
         url = reverse('notes:add')
         form_data = {
             'title': 'testTitle',
@@ -23,7 +23,7 @@ class TestNote(BaseTest):
         self.assertEqual(notes_count, 2)
 
     def test_anonymous_user_cannot_create_note(self):
-        """Создание заметки - аноним"""
+        """Проверка на создание заметки: аноним."""
         url = reverse('notes:add')
         form_data = {
             'title': 'testTitle',
@@ -43,7 +43,7 @@ class TestNote(BaseTest):
 class SlugCase(BaseTest):
 
     def test_create_notes_with_same_slug(self):
-        """Создание заметки с одинаковым slug"""
+        """Проверка на создание заметки с одинаковым slug."""
         note_data = {
             'title': 'secondNote',
             'text': 'secondText',
@@ -59,7 +59,7 @@ class SlugCase(BaseTest):
         self.assertIn('form', response.context)
 
     def test_slug_is_empty(self):
-        """Создание заметки с пустым slug"""
+        """Проверка на создание заметки с пустым slug."""
         note_empty_slug = {
             'title': 'тестовый заголовок',
             'text': 'тестовый текст',
@@ -79,7 +79,7 @@ class SlugCase(BaseTest):
 class TestNotePermissions(BaseTest):
 
     def test_author_can_edit_own_note(self):
-        """Редактирование заметки автором"""
+        """Проверка на редактирование заметки: автор."""
         edit_url = reverse('notes:edit', args=(self.note.slug,))
         edit_data = {
             'title': 'Обновленный заголовок',
@@ -96,7 +96,7 @@ class TestNotePermissions(BaseTest):
         self.assertEqual(self.note.slug, 'updated-note')
 
     def test_author_can_delete_own_note(self):
-        """Удаление заметки автором"""
+        """Проверка на удаление заметки: автор."""
         delete_url = reverse('notes:delete', args=(self.note.slug,))
         response = self.author_client.post(delete_url)
 
@@ -107,7 +107,7 @@ class TestNotePermissions(BaseTest):
         self.assertFalse(Note.objects.filter(slug='test-note').exists())
 
     def test_other_user_cannot_edit_note(self):
-        """Редактирование заметки другим пользователем"""
+        """Проверка на редактирование заметки: пользователь."""
         edit_url = reverse('notes:edit', args=(self.note.slug,))
         edit_data = {
             'title': 'Обновленный заголовок',
@@ -124,7 +124,7 @@ class TestNotePermissions(BaseTest):
         self.assertEqual(self.note.slug, 'test-note')
 
     def test_other_user_cannot_delete_note(self):
-        """Удаление заметки другим пользователем"""
+        """Проверка на удаление заметки: пользователь."""
         delete_url = reverse('notes:delete', args=(self.note.slug,))
         response = self.reader_client.post(delete_url)
 

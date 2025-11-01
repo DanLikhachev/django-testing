@@ -1,10 +1,11 @@
+from http import HTTPStatus
+
 import pytest
 from django.urls import reverse
-from http import HTTPStatus
 from pytest_django.asserts import assertFormError
 
-from news.models import Comment
 from news.forms import WARNING
+from news.models import Comment
 
 
 @pytest.mark.django_db
@@ -58,7 +59,7 @@ def test_comment_edit(
     objects_count,
     comment
 ):
-    """Возможность редактирования комментария"""
+    """Проверка на редактирование комментария."""
     url = reverse('news:edit', kwargs={'pk': comment.pk})
     response = client_fixture.post(
         url,
@@ -85,7 +86,7 @@ def test_comment_delete(
     objects_count,
     comment
 ):
-    """Возможность удаления комментария"""
+    """Проверка на возможность удаления комментария."""
     url = reverse('news:delete', kwargs={'pk': comment.pk})
     response = client_fixture.post(url)
     assert response.status_code == response_status
@@ -94,7 +95,7 @@ def test_comment_delete(
 
 @pytest.mark.django_db
 def test_bad_words_in_comment(news, author_client):
-    """Запрещенные слова"""
+    """Проверка на запрещенные слова."""
     url = reverse('news:detail', kwargs={'pk': news.pk})
     response = author_client.post(
         url,

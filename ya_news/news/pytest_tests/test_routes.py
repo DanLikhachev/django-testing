@@ -14,7 +14,7 @@ from http import HTTPStatus
     ]
 )
 def test_public_pages(client, page, expected):
-    """Просмотр публичных страниц"""
+    """Проверка публичных страниц."""
     url = reverse(page)
     response = client.get(url)
     assert response.status_code == expected
@@ -22,7 +22,7 @@ def test_public_pages(client, page, expected):
 
 @pytest.mark.django_db
 def test_logout(client):
-    """Доступ к выходу из аккаунта"""
+    """Проверка выхода из аккаунта."""
     url = reverse('users:logout')
     response = client.post(url)
     assert response.status_code == HTTPStatus.OK
@@ -30,7 +30,7 @@ def test_logout(client):
 
 @pytest.mark.django_db
 def test_news_detail(news, client):
-    """Просмотр новости"""
+    """Проверка просмотра тестовой новости."""
     url = reverse('news:detail', kwargs={'pk': news.pk})
     response = client.get(url)
     assert response.status_code == HTTPStatus.OK
@@ -42,27 +42,39 @@ def test_news_detail(news, client):
     ['news:edit', 'news:delete']
 )
 @pytest.mark.parametrize(
-    'client_fixture, expected_status, should_redirect',
+    'client_fixture, expected_status',
     [
-        (pytest.lazy_fixture('client'), None, True),
-        (pytest.lazy_fixture('user_client'), HTTPStatus.NOT_FOUND, False),
-        (pytest.lazy_fixture('author_client'), HTTPStatus.OK, False),
+        (pytest.lazy_fixture('client'), HTTPStatus.FOUND),
+        (pytest.lazy_fixture('user_client'), HTTPStatus.NOT_FOUND),
+        (pytest.lazy_fixture('author_client'), HTTPStatus.OK),
     ]
 )
 def test_comment_edit_delete_access(
     url_name,
     client_fixture,
     expected_status,
-    should_redirect,
     comment
 ):
-    """Доступ к редактированию и удалению комментария"""
-    login_url = reverse('users:login')
+    """Проверка доступа к редактированию и удалению комментария."""
     url = reverse(url_name, kwargs={'pk': comment.pk})
     response = client_fixture.get(url)
 
-    if should_redirect:
-        expected_url = f'{login_url}?next={url}'
-        assertRedirects(response, expected_url)
-    else:
-        assert response.status_code == expected_status
+    assert response.status_code == expected_status
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    'url_name',
+    ['news:edit', 'news:delete']
+)
+def test_comment_edit_delete_redirect_anon(
+    client,
+    url_name,
+    comment
+):
+    """Проверка на редирект для анонимного пользователя: аноним"""
+    login_url = reverse('users:login')
+    url = reverse(url_name, kwargs={'pk': comment.pk})
+    response = client.get(url)
+    expected_url = f'{login_url}?next={url}'
+    assertRedirects(response, expected_url)
